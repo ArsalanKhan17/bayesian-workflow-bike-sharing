@@ -1,0 +1,25 @@
+Package: bayesBikeWorkflow
+Title: An Executable Bayesian Workflow for UCI Bike Sharing
+Version: 0.1.0
+Authors@R: person("ArsalanKhan17", role = c("aut", "cre"), email = "60335196+ArsalanKhan17@users.noreply.github.com")
+Description: A reproducible teaching project for Bayesian count regression,
+    model criticism, temporal dependence, and chronological evaluation.
+License: MIT
+Encoding: UTF-8
+Depends: R (>= 4.5.0)
+Imports:
+    brms,
+    cmdstanr,
+    posterior,
+    bayesplot,
+    loo,
+    targets,
+    renv,
+    ggplot2,
+    jsonlite,
+    digest,
+    knitr,
+    rmarkdown,
+    testthat
+Remotes: stan-dev/cmdstanr@v0.9.0
+

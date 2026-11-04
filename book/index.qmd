@@ -1,0 +1,41 @@
+---
+title: "The workflow, not just the fit"
+numbered: false
+---
+
+```{r}
+source("_common.R")
+```
+
+Bayesian analysis is a conversation between a question, a probability model, and data. A sampler is one part of that conversation. This book follows a single case study far enough to show what happens when a model's assumptions encounter real observations.
+
+We study daily Capital Bikeshare rentals in Washington, DC, using the UCI Bike Sharing dataset [@uci]. We start with an interpretable count model, inspect what its priors imply, fit it, look for failures, and revise it. We then ask whether those revisions help predict later observations.
+
+::: {.callout-note title="Who this is for"}
+You should be comfortable with regression, basic probability, and R. You do not need prior experience writing Stan models. Equations explain the probability model; executable R functions connect each idea to implementation.
+:::
+
+## The route
+
+**Question → provenance → generative model → prior simulation → posterior computation → criticism → revision → temporal evaluation → communication.**
+
+This is an iterative workflow [@workflow]. The arrows can point backward: prior simulations can reveal a poor parameterization; residual dependence can undermine a validation scheme; a good-looking aggregate fit can conceal poor predictions on unusual days.
+
+Four models form a controlled progression: Poisson, negative binomial with the same mean structure, a richer negative-binomial mean, and a latent temporal extension. We do not declare a preferred model in advance. Sampling diagnostics, predictive checks, and later-period performance answer different questions, and a model can pass one while failing another.
+
+## What is executable?
+
+The scripts in `R/` generate all model fits, summaries, scores, and figures. This book reads their compact outputs. Rendering therefore does not silently refit models. Use `Rscript scripts/run.R --profile full` from the repository root to regenerate the evidence, and `quarto render book` to regenerate these pages.
+
+The run manifest records versions, configuration, provenance, and diagnostic status. The release checksum file links the published results to the source code. Long-lived fitted objects remain in the ignored local cache; the small CSV results and figures remain inspectable in Git.
+
+::: {.callout-important title="Evidence status"}
+This book reads only `results/full/`. Short smoke runs verify execution and are never substituted for the full analysis. Failed diagnostics remain visible in the inference chapter; they are not converted into a success badge.
+:::
+
+## How to read critically
+
+At each stage, ask: What assumption did we add? What observable behavior does it imply? What check could show it is inadequate? What claim remains justified if that check fails?
+
+These questions matter more than remembering a particular package command. A Bayesian posterior is conditional on the model, its priors, and the supplied information. It does not remove measurement problems, confounding, or the need to choose an appropriate prediction task.
+

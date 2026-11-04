@@ -1,0 +1,76 @@
+---
+title: "Evaluate predictions and inspect sensitivity"
+---
+
+```{r}
+source("_common.R")
+```
+
+## Chronology defines the test
+
+We train through December 2011 and evaluate Q1 2012, then expand training through Q1 and evaluate Q2, then expand through Q2 and evaluate Q3. Finally, fit through September 2012 and evaluate October–December. Each partition learns its own centering and scaling constants. Predictor weather is supplied, but evaluation rental outcomes never enter the fit or latent-state propagation.
+
+All evaluation windows use a fixed origin for the whole quarter. Scores therefore reflect predictions across increasing horizons, not a sequence of updated one-day forecasts.
+
+Random row splits would mix earlier and later dates. Ordinary pointwise leave-one-out also does not automatically answer the future-prediction question when observations are dependent. PSIS-LOO is useful for suitable predictive targets [@loo], but a convenient function call cannot substitute for defining that target. We retain `loo` in the analysis toolkit and use explicit chronological refits here.
+
+## Score complete predictive distributions
+
+For day $t$, the marginal predictive log density is estimated as
+
+$$
+\log\left[\frac1S\sum_{s=1}^S p(y_t\mid\theta^{(s)},u_t^{(s)},X_t)\right].
+$$
+
+The implementation uses log-sum-exp arithmetic. Averaging log densities would be a different quantity. Larger scores are better; very confident misses can be penalized heavily. These are **daily marginal** scores, not the joint predictive log density of an entire dependent trajectory.
+
+MAE uses predictive medians. Coverage reports the observed fraction inside central 50%, 80%, and 95% predictive intervals; widths indicate sharpness. Calibration and sharpness must be considered together. A short evaluation quarter gives noisy coverage estimates, particularly with dependent outcomes. We do not attach independent-observation standard errors to these scores.
+
+```{r}
+m <- read_result("metrics.csv")
+knitr::kable(m[!grepl("sensitivity",m$tag),c("model","split","n","sampling_passed","selection_eligible","mean_log_score","mae","coverage50","coverage80","coverage95","width95")], digits = 3)
+```
+
+Scores from failed sampling screens remain visible for diagnosis, but are provisional. A candidate is eligible for selection only when its required fits pass. The exclusion is based on computation, not on whether a score is attractive.
+
+```{r}
+table_result("model_status.csv")
+```
+
+```{r}
+#| fig-cap: "Model comparisons across distinct chronological windows expose variation that an aggregate ranking can hide."
+figure_result("model_comparison")
+```
+
+## Inspect the final quarter
+
+```{r}
+#| fig-cap: "Final-period predictions conditional on recorded weather. The bands describe actual daily counts, including future temporal-state uncertainty when applicable. Panels use separate vertical scales."
+figure_result("final_predictions")
+```
+
+```{r}
+#| results: asis
+final_rows <- m[m$split == "final" & !grepl("sensitivity",m$tag), ]
+poisson_cover <- final_rows$coverage95[final_rows$model == "poisson"]
+nb_cover <- final_rows$coverage95[final_rows$model != "poisson"]
+cat(sprintf("The Poisson model's nominal 95%% intervals cover only **%.1f%%** of final-quarter observations. The negative-binomial variants cover **%.1f–%.1f%%**. Allowing extra count variation makes a substantial difference, while the observed coverage still falls below the nominal 95%% level for every candidate. This is a predictive weakness despite acceptable sampler diagnostics, not a reason to redefine the interval label.\n",100*poisson_cover,100*min(nb_cover),100*max(nb_cover)))
+```
+
+Unusual days, changing system conditions, and the small number of annual cycles limit generalization. Inspect persistent runs of misses as well as individual extremes. A good average log score does not guarantee useful predictions in every regime.
+
+## Sensitivity is a targeted question
+
+Two additional development-period fits change the nonlinear model's coefficient prior SD from 0.5 to 0.25 or 1, holding the likelihood, predictor structure, intercept prior, and shape prior fixed. The final quarter is evaluated after those specifications are fixed; it is not used to choose the prior.
+
+```{r}
+sens <- m[m$model == "nonlinear" & m$split == "final", ]
+knitr::kable(sens[,c("tag","mean_log_score","mae","coverage95","width95")], digits = 3)
+```
+
+If scores and important parameter summaries move little, that supports robustness to this particular prior-scale change. It does not establish robustness to omitted predictors, alternative seasonal structures, a different latent process, or dataset shift. Parameter CSVs permit a closer comparison than predictive scores alone.
+
+## Exercise
+
+Imagine a model with lower MAE but worse log score and poor 95% coverage. Describe a use case where that tradeoff matters. Then explain why selecting a model repeatedly on the final quarter would turn that quarter into development data.
+

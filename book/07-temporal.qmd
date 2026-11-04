@@ -1,0 +1,70 @@
+---
+title: "Model dependence and propagate future uncertainty"
+---
+
+```{r}
+source("_common.R")
+```
+
+## A latent process for related days
+
+The temporal extension retains the nonlinear negative-binomial mean and adds a latent log-count process:
+
+$$
+\log\mu_t=\alpha+X_t\beta+u_t,\qquad
+u_t=\rho u_{t-1}+\epsilon_t,\qquad
+\epsilon_t\sim\mathcal N(0,\sigma_\epsilon^2).
+$$
+
+For $|\rho|<1$, a stationary initial state has
+
+$$
+u_1\sim\mathcal N\!\left(0,\frac{\sigma_\epsilon^2}{1-\rho^2}\right).
+$$
+
+`brms` calls the innovation SD `sderr`. It is **not** the stationary SD $\sigma_\epsilon/\sqrt{1-\rho^2}$. Confusing those quantities changes both the fitted process and future predictive uncertainty.
+
+The prior for $\rho$ is normal with SD 0.5, restricted to $(-1,1)$. The innovation SD has a half-normal prior with scale 0.5. Both the latent process and negative-binomial dispersion can explain variation, so their separation deserves scrutiny. An apparently adequate predictive distribution does not guarantee precise identification of each variance component.
+
+## Fit using brms, evaluate the same model efficiently
+
+The formula uses `ar(time = day_index, p = 1, cov = TRUE)`. The covariance form supports the non-Gaussian likelihood by introducing latent residuals. In brms 2.23, its generated code constructs a dense covariance factor at each evaluation. We replace that calculation with the exact stationary recursion on the same standardized latent variables:
+
+$$
+u_1=\sigma_\epsilon z_1/\sqrt{1-\rho^2},\qquad
+u_t=\rho u_{t-1}+\sigma_\epsilon z_t,\quad z_t\sim\mathcal N(0,1).
+$$
+
+This changes arithmetic cost, not the probability model or priors. The rewrite checks explicit generator anchors and fails if brms changes them. Tests compare the recurrence with dense Cholesky multiplication for positive, negative, and zero correlation. Both original and optimized generated code remain available through the fit and implementation functions.
+
+An optional experiment also samples the states directly in centered coordinates, using the same stationary initial density and Gaussian transition densities. Algebraic tests verify that this is the same probability law. Computational behavior can still differ:
+
+```{r}
+if (file.exists(file.path(results,"centered_experiment.csv")))
+  table_result("centered_experiment.csv")
+```
+
+The recorded centered experiment on the first development fold is excluded from inferential results. Its low energy BFMI and effective sample sizes illustrate why reparameterization must be evaluated, not assumed to help. Reproduce it with `Rscript scripts/compare-parameterizations.R`. The temporal candidate uses the noncentered recurrence with tighter integration where needed. Its unresolved development-fold failures disqualify it from model selection. A successful final-period fit does not resolve those earlier computational failures.
+
+```{r}
+#| fig-cap: "The temporal fit needs the same chain checks as simpler models, with additional attention to variance-component tradeoffs."
+figure_result("temporal_trace")
+```
+
+## Predictions must respect the information boundary
+
+For every posterior draw, take the last **training** latent state and simulate independent innovations forward through the evaluation dates. Add those states to the fixed predictor and draw actual counts from NB2. Keep the same parameter draw across an entire trajectory so uncertainty is propagated coherently.
+
+No evaluation count is used to estimate or update these future states. A test changes all evaluation outcomes and verifies that generated predictions remain identical. Predictions also require consecutive, correctly ordered dates immediately after training; otherwise execution stops.
+
+The latent process can improve near-origin predictions yet contribute little to a distant quarter-end mean. Its uncertainty approaches the stationary distribution rather than vanishing. Future expected-count intervals for this model include uncertainty about latent states; predictive intervals additionally include count noise.
+
+```{r}
+#| fig-cap: "Conditional development residual checks for the temporal fit. These reuse fitted latent states and are not evidence of out-of-sample performance."
+figure_result("temporal_acf")
+```
+
+## Exercise
+
+Derive $\operatorname{Var}(u_{T+h}\mid u_T,\rho,\sigma_\epsilon)$ and verify that it equals $\sigma_\epsilon^2(1-\rho^{2h})/(1-\rho^2)$. Explain how an evaluation that updates $u_t$ using the evaluation outcome answers a different prediction question.
+

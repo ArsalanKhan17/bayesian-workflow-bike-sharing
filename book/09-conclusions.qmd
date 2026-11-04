@@ -1,0 +1,74 @@
+---
+title: "Communicate what the evidence supports"
+---
+
+```{r}
+source("_common.R")
+```
+
+## A conclusion should preserve its conditions
+
+This analysis concerns one bike-sharing system over two years, conditional on recorded weather and chosen calendar features. It demonstrates how a probability model is specified, computed, challenged, revised, and evaluated. It does not establish causal weather effects or validate a forecasting service for another city or year.
+
+The numerical summary below is generated from executed outputs. A model is eligible for the development ranking only when its required fits passed the stated computational checks. Persistent failures in the temporal candidate exclude it from that ranking. The final quarter is displayed separately and does not determine the ranking.
+
+```{r}
+#| results: asis
+m <- read_result("metrics.csv")
+d <- read_result("diagnostics.csv")
+cv <- m[grepl("^cv_",m$split), ]
+status <- read_result("model_status.csv")
+eligible <- setNames(status$sampling_eligible,status$model)
+cv <- cv[cv$model %in% names(eligible)[eligible], ]
+if (nrow(cv)) {
+  ranking <- aggregate(cbind(weighted_score=cv$mean_log_score*cv$n, n=cv$n),
+                       list(model=cv$model), sum)
+  ranking$mean_log_score <- ranking$weighted_score/ranking$n
+  ranking <- ranking[order(-ranking$mean_log_score), ]
+  best <- ranking$model[1]
+  final <- m[m$split=="final" & m$model==best & !grepl("sensitivity",m$tag), ]
+  cat(sprintf("Among computationally eligible models, **%s** has the highest average daily log predictive density across the three development evaluation quarters (%.3f). This is an empirical ranking for the specified prediction task, not proof of universal superiority.\n\n",best,ranking$mean_log_score[1]))
+  cat(sprintf("Its final-quarter mean daily log predictive density is **%.3f**, MAE is **%.0f rentals**, and 95%% predictive coverage is **%.1f%%**, with average interval width **%.0f rentals**.\n\n",final$mean_log_score,final$mae,100*final$coverage95,final$width95))
+  if (final$coverage95 < .95)
+    cat("Observed final-quarter coverage falls short of the nominal interval level. Predictive calibration remains a limitation, even after computational problems are resolved. Any model revision prompted by this final-quarter result would need fresh evaluation data.\n\n")
+} else cat("**No model has a complete set of computationally accepted development-fold fits.** Do not report a reliable model ranking until those issues are resolved.\n\n")
+if (nrow(cv)) {
+  contrast <- read_result(paste0(best,"_contrast.csv"))
+  cat(sprintf("Under the selected model, the adverse-weather/clear-weather expected-count ratio has posterior median **%.2f** and 95%% credible interval **[%.2f, %.2f]**, conditional on otherwise identical covariates. This is an association, with only a small number of adverse-weather days supporting it.\n",contrast$median_ratio,contrast$lo95,contrast$hi95))
+}
+```
+
+## What remains uncertain?
+
+The two-year period offers limited evidence about recurring annual patterns and long-run growth. Weather and season are correlated. Rare adverse-weather categories have fewer observations. Service disruptions, fleet availability, pricing, and unusual events can affect rentals without being represented in the predictor set. Realized rentals also need not equal unconstrained demand.
+
+The nonlinear temperature profile rises across lower and middle temperatures and bends downward toward the upper end of the displayed range. This is a conditional model-based pattern on UCI's normalized scale, not an identified causal temperature optimum.
+
+The temporal extension can allocate variability between a latent process and NB2 dispersion in different ways. Its conditional in-sample fit can look compelling because latent states are informed by training outcomes. Chronological prediction is the relevant check on whether that flexibility helps the chosen out-of-sample task.
+
+Our sensitivity analysis varies coefficient prior scale only. The published uncertainty intervals condition on a particular model; they do not account for every alternative likelihood, prior, predictor, measurement assumption, or future change in the system.
+
+## Reproducibility receipt
+
+```{r}
+knitr::kable(data.frame(item=c("R","brms","CmdStan","Quarto","Profile","Sampling screens"),
+  value=c(manifest$versions$R,manifest$versions$brms,manifest$versions$cmdstan,
+          manifest$versions$quarto,manifest$profile,
+          ifelse(manifest$all_sampling_diagnostics_pass,"all passed","failures present"))))
+```
+
+The manifest, per-fit parameter summaries, predictive scores, preprocessing constants, and session information are committed with the project. Seeds and version locks support rerunning; numerical Monte Carlo agreement, not bitwise identity, is the expected cross-platform reproducibility criterion.
+
+The separate seeded recovery experiment checks a small known NB2 data-generating process. Passing it supports the implementation of that experiment. It is not full simulation-based calibration of the temporal model or a proof that the real dataset follows NB2.
+
+## Take the workflow elsewhere
+
+Start the next project by writing its information boundary and estimand. Simulate from its priors before drawing substantive conclusions. Separate computational failures from model failures. Compare predictions under a validation scheme that resembles the intended use. Preserve the conditions and limitations when communicating results.
+
+## Extension exercises
+
+- Replace the quadratic temperature term with a regularized spline and compare chronological predictions.
+- Include weather-forecast uncertainty rather than supplying realized weather.
+- Compare fixed-origin quarterly predictions with explicitly updated one-day-ahead predictions.
+- Perform repeated simulated-data recovery or full simulation-based calibration for the temporal model.
+

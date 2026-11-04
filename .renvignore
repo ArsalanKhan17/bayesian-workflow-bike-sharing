@@ -1,0 +1,8 @@
+cache/
+logs/
+_targets/
+results/
+book/_book/
+book/.quarto/
+book/assets/generated/
+

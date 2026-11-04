@@ -1,0 +1,49 @@
+---
+title: "Establish provenance and inspect the data"
+---
+
+```{r}
+source("_common.R")
+```
+
+## The source is part of the analysis
+
+The archived daily file contains 731 consecutive dates from January 2011 through December 2012. There are no missing cells or duplicate dates. We preserve the original CSV and readme, record SHA-256 checksums, and validate the expected schema before analysis. These checks establish the identity and structural integrity of our input; they do not prove the underlying measurements are error-free.
+
+The [data dictionary](data-dictionary.qmd) documents field meanings and exclusions. UCI's landing-page summaries and original archive are not perfectly aligned. The daily and hourly sample sizes differ, season labels conflict, and temperature normalization descriptions require care. We use the actual daily-file count, derive seasonal terms from dates, and retain normalized temperature rather than asserting an uncertain Celsius conversion.
+
+## Split before exploring outcomes
+
+Development data end on September 30, 2012. The final 92 days form the confirmatory evaluation period. The plots below use development outcomes only. Earlier expanding-window partitions later evaluate how the models behave at different points in the series.
+
+```{r}
+#| fig-cap: "Development-period observations: growth, seasonality, and occasional unusual days all matter."
+figure_result("development_series")
+```
+
+```{r}
+#| fig-cap: "Temperature associations mix weather, calendar time, and other changing conditions."
+figure_result("weather_exploration")
+```
+
+The visual patterns motivate count likelihoods, calendar adjustment, and possible nonlinearity. They do not tell us that a particular coefficient is causal. Only two annual cycles are available, so separating secular growth from seasonality is intrinsically uncertain.
+
+## A concrete leakage trap
+
+The source includes `casual` and `registered`. Their sum is exactly `cnt` for every row. Using either component as a predictor would partially reveal the outcome, and using both would reveal it completely. The modeling frame is built from an explicit allow-list, rather than by dropping whichever fields happen to look suspicious.
+
+We use normalized temperature, humidity, windspeed, working-day status, weather category, continuous calendar trend, and annual sine/cosine terms. Apparent temperature is excluded because it overlaps strongly with temperature. Month, season, and year indicators are not added alongside the selected trend and Fourier representation.
+
+## Learn transformations inside each partition
+
+Continuous predictors are centered and scaled using that partition's training observations. Evaluation data use those same constants. The quadratic temperature term is also centered with a training-only constant. Factors have explicit source-defined levels; absent daily category 4 is not invented.
+
+```{r}
+#| results: asis
+show_source("R/data.R")
+```
+
+## Exercise
+
+Explain why including future predictor values in a standardization calculation is an information leak even when no future outcomes are used. Then inspect the test that perturbs evaluation observations and confirms that fitted preprocessing constants remain unchanged.
+

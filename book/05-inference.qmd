@@ -1,0 +1,81 @@
+---
+title: "Fit the posterior and diagnose computation"
+---
+
+```{r}
+source("_common.R")
+```
+
+## What NUTS does
+
+Stan uses Hamiltonian Monte Carlo with the No-U-Turn Sampler to explore the joint posterior. Warmup adapts the step size and geometry; those iterations are not used as posterior draws. Retained iterations are dependent samples, so their count alone does not determine precision.
+
+We start with four independently initialized chains, each with 2,000 warmup and 2,000 retained iterations. A failed computational screen triggers a bounded refit with 4,000 warmup and 4,000 retained iterations per chain. Divergences trigger tighter integration through `adapt_delta = 0.999` and a treedepth cap of 14. If a lengthened run kept the original integration settings and then reveals problems, one final integration refit uses `adapt_delta = 0.9999` and cap 16. All attempts remain inspectable. Persistent failure disqualifies a candidate from selection; the thresholds are not relaxed to admit it. These responses depend only on training-fit diagnostics, not predictive scores.
+
+The common seed supports reproducibility within the recorded software environment; it does not guarantee bitwise-identical output across compiler and hardware changes.
+
+NUTS does not turn the posterior into a normal distribution and does not require a conjugate prior. It does require a suitable differentiable parameterization and enough computation to explore the posterior geometry.
+
+## Inspect chains before interpreting coefficients
+
+```{r}
+#| fig-cap: "Trace plots expose chain disagreement, drift, and slow exploration that a coefficient table can conceal."
+figure_result("nonlinear_trace")
+```
+
+Look for chains exploring the same region without sustained drift or chain-specific locations. Visual overlap is useful but not sufficient. We also report rank-normalized R-hat and bulk/tail effective sample sizes [@rhat]. Tail ESS matters when conclusions depend on interval endpoints or rare-event probabilities.
+
+```{r}
+d <- read_result("diagnostics.csv")
+knitr::kable(d[,c("tag","iter","warmup","max_rhat","min_bulk_ess","min_tail_ess","divergences","treedepth_hits","min_bfmi","passed")], digits = 3)
+```
+
+The pipeline checks all saved nonconstant model parameters, including latent temporal states. The acceptance thresholds are R-hat below 1.01, bulk and tail ESS at least 400, zero divergences, zero maximum-treedepth hits, and chainwise energy BFMI above 0.3. These are practical screening thresholds, not proof of convergence.
+
+::: {.callout-important title="Computational status"}
+```{r}
+#| results: asis
+if (isTRUE(manifest$all_sampling_diagnostics_pass)) {
+  cat("All retained analysis fits passed the stated sampling screens. This supports posterior computation; it does not establish model adequacy. Failed preliminary attempts remain separately inspectable.\n")
+} else {
+  cat("**At least one candidate fit failed a sampling screen.** Affected estimates and scores are provisional, and the candidate is excluded from model selection.\n\n")
+  if (isTRUE(manifest$analysis_ready))
+    cat(sprintf("The selected **%s** analysis passes its required computational checks. Exclusions and reasons are recorded in `model_status.csv`.\n",manifest$selected_model))
+}
+```
+:::
+
+Divergences can indicate problematic geometry even when R-hat looks acceptable. Raising `adapt_delta` may help integration, but persistent problems warrant stronger priors, better scaling, reparameterization, or a simpler model. More iterations cannot repair a broken likelihood or a fundamentally unidentified parameterization.
+
+## Read posterior summaries as conditional statements
+
+```{r}
+#| fig-cap: "Posterior coefficients for the nonlinear negative-binomial model. Effects involving temperature require combining its linear and quadratic terms."
+figure_result("nonlinear_coefficients")
+```
+
+A 95% credible interval summarizes uncertainty under the specified model and priors. A coefficient interval excluding zero is not a universal definition of scientific importance. Translate coefficients into rental-count contrasts, assess their magnitude, and check whether the data support the corresponding predictor combinations.
+
+For example, the fitted adverse-weather versus clear-weather mean ratio, at otherwise identical supplied covariates, is:
+
+```{r}
+table_result("nonlinear_contrast.csv")
+```
+
+This contrast remains an association. Its apparent precision does not account for omitted confounders, source errors, or uncertainty across all possible models.
+
+Probability statements in these summaries are Monte Carlo proportions. A displayed probability of 1 means every retained draw had that direction; it does not imply logical certainty.
+
+## Separate uncertainty about a mean from variation in actual counts
+
+```{r}
+#| fig-cap: "A model-based temperature profile from the nonlinear fit. The range is the development 5th–95th percentiles; other features stay at one observed development day's profile. This is a conditional association display, not a causal effect curve."
+figure_result("uncertainty_temperature")
+```
+
+The darker interval describes uncertainty in expected rentals. The pale predictive interval also includes NB2 observation variation. Collecting more data can reduce uncertainty about the mean without removing the variability of an actual day's count. Holding correlated weather and calendar features fixed also limits how literally this profile should be extrapolated.
+
+## Exercise
+
+Suppose a model has R-hat 1.00 but 80 divergent transitions. Explain why adding a polished posterior plot does not make its interval estimates trustworthy. Identify a parameterization or prior change you would investigate before simply increasing iterations.
+

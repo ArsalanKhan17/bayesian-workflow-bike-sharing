@@ -1,0 +1,57 @@
+---
+title: "Criticize the model and revise it"
+---
+
+```{r}
+source("_common.R")
+```
+
+## Ask the model to generate data
+
+A posterior predictive check compares observations with datasets replicated from the fitted model. It asks whether the model can reproduce chosen features of the data it learned from. It is neither an independent predictive test nor a certificate that the model is true.
+
+We examine marginal distributions, dataset summaries, and residual autocorrelation. Each check targets a different possible failure. A pooled count distribution may look adequate while day-specific intervals remain too narrow; a flexible mean may fit levels while leaving serial dependence.
+
+```{r}
+#| fig-cap: "Poisson replicated counts compared with observed development counts. A marginal density overlay alone cannot establish conditional dispersion adequacy."
+figure_result("poisson_ppc")
+```
+
+```{r}
+#| fig-cap: "Changing the likelihood to negative binomial allows extra-Poisson variation without changing the initial mean structure."
+figure_result("negbin_ppc")
+```
+
+## Change one assumption at a time
+
+The Poisson and initial negative-binomial models have identical predictor formulas and coefficient priors. Their main difference is the conditional mean–variance relationship. The nonlinear model then adds quadratic temperature and the second annual harmonic, retaining the negative-binomial likelihood.
+
+This progression separates two explanations for poor predictive behavior: inadequate variation at a given expected count and inadequate structure in the expected count itself. A larger shape uncertainty or wider predictive interval cannot correct a systematic mean error. Conversely, adding more predictors need not repair a likelihood that underestimates residual variation.
+
+```{r}
+#| fig-cap: "A richer mean structure changes the replicated distribution. Later-period evaluation determines whether that complexity generalizes."
+figure_result("nonlinear_ppc")
+```
+
+```{r}
+files <- paste0(c("poisson","negbin","nonlinear"),"_ppc_statistics.csv")
+knitr::kable(do.call(rbind,lapply(files,read_result)), digits = 2)
+```
+
+The table reports observed summaries and medians across replicated datasets. It is deliberately descriptive; a matching median is not a formal goodness-of-fit guarantee. Individual daily predictions and extreme observations deserve inspection too.
+
+## Dependence is a model assumption
+
+For the first three models, observations are conditionally independent given parameters and supplied predictors. Persistent residual autocorrelation suggests that this conditional-independence assumption may be incomplete.
+
+```{r}
+#| fig-cap: "Development residual dependence for the nonlinear model. The envelope is pointwise and posterior predictive, not a simultaneous hypothesis-testing threshold."
+figure_result("nonlinear_acf")
+```
+
+The residual plot uses posterior mean expected counts and a median dispersion estimate as a diagnostic summary. It does not integrate every possible residual definition. A visible pattern motivates a dependence model, but does not prove which mechanism generated the pattern: omitted variables, changing service availability, or a latent process can all contribute.
+
+## Exercise
+
+Design a check targeted at unusually low rental days. Explain why that check could reveal a weakness missed by the pooled density overlay. Consider whether a low day reflects ordinary demand variation, extreme weather, or a service interruption the predictors cannot describe.
+

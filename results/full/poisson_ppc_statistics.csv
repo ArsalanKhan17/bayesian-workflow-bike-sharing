@@ -1,0 +1,5 @@
+"model","statistic","observed","replicate_median"
+"poisson","mean",4409.17214397496,4408.98904538341
+"poisson","sd",1921.0776434108,1794.86135326462
+"poisson","max",8714,8780.5
+"poisson","zero_fraction",0,0

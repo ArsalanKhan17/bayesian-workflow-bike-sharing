@@ -1,0 +1,52 @@
+---
+title: "Simulate before fitting"
+---
+
+```{r}
+source("_common.R")
+```
+
+## Make the prior interpretable
+
+The centered log-count intercept has prior $\mathcal N(\log 3000,1)$. It expresses an illustrative order of magnitude for aggregate daily rentals, not a claim that demand is known to be 3,000. A 95% interval on this log scale spans approximately a factor of seven in either direction on the count scale.
+
+Population coefficients have independent $\mathcal N(0,0.5)$ priors. For a one-unit contrast, this puts approximately 95% prior mass on multipliers from 0.38 to 2.66. That interpretation applies to each coefficient's own design-column unit; it is not a bound on an entire seasonal cycle or a combined quadratic temperature contrast.
+
+NB2 shape has prior $\operatorname{Lognormal}(\log 10,1)$. It is proper and allows substantial extra-Poisson variation. The temporal extension adds a truncated $\mathcal N(0,0.5)$ prior for $\rho\in(-1,1)$ and a half-normal innovation SD with scale 0.5. The temporal chapter explains why innovation SD differs from the stationary latent SD.
+
+In `brms`, the intercept prior applies to an internally centered design matrix. It is therefore not the log count at the original reference levels of every predictor. We reproduce that centering in the prior simulator, so the simulations correspond to the fitted model.
+
+```{r}
+#| echo: true
+source("../R/models.R")
+as.data.frame(model_priors("nonlinear"))[, c("prior", "class")]
+```
+
+## From parameter beliefs to observable implications
+
+For each of 1,000 prior draws, we generate an entire development-period dataset with its observed predictor design. These are **conditional prior predictive checks**: predictor distributions are not being modeled. The temporal model also simulates stationary latent paths.
+
+```{r}
+#| fig-cap: "Prior predictive means on a log10 scale expose the breadth and tails of the implied rental counts. The observed development mean is a reference, not the prior's target."
+figure_result("nonlinear_prior")
+```
+
+```{r}
+s <- read_result("nonlinear_prior_predictive.csv")
+knitr::kable(data.frame(quantity = c("Dataset mean", "Dataset SD", "Dataset maximum"),
+  median = c(median(s$mean), median(s$sd), median(s$maximum)),
+  lower95 = c(quantile(s$mean,.025), quantile(s$sd,.025), quantile(s$maximum,.025)),
+  upper95 = c(quantile(s$mean,.975), quantile(s$sd,.975), quantile(s$maximum,.975))), digits = 1)
+```
+
+Broad priors can generate dataset maxima much larger than recorded observations. The plot and table expose that behavior instead of clipping it away. These priors are weakly regularizing tutorial defaults, not a fleet-capacity model. If an actual deployment had known capacity limits or service outages, those facts would motivate a different model and stronger prior checks.
+
+## Prior checks are not fitting by eye
+
+Ask whether simulated datasets contradict available domain knowledge, whether extreme predictions arise from an unintended parameterization, and whether the prior has enough mass on plausible data. Do not repeatedly adjust priors until they recreate every observed feature. Record any use of development outcomes in calibration, and do not inspect final-period outcomes to tune them.
+
+We retain these transparent defaults and later refit the nonlinear model with coefficient SDs 0.25 and 1. This sensitivity analysis changes only that prior component; it cannot establish robustness to every modeling choice.
+
+## Exercise
+
+Replace a log-count coefficient prior with $\mathcal N(0,10)$ in a separate experiment. Before simulating, predict what will happen to rental-count maxima. Then explain why a prior that looks broad and harmless on the coefficient scale can be highly informative about implausible observable behavior.

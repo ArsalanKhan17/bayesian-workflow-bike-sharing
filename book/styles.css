@@ -1,0 +1,12 @@
+:root { --bs-primary: #16324f; --bs-link-color: #23668d; }
+body { color: #243447; }
+h1,h2,h3 { color: #16324f; }
+.sidebar-title { font-weight: 700; }
+.subtitle { color: #58718a; }
+.callout { border-radius: .35rem; }
+table { font-variant-numeric: tabular-nums; font-size: .9em; }
+figcaption { color: #526579; }
+pre { border-radius: .3rem; }
+.cell-output-display { overflow-x: auto; }
+.quarto-title-banner { background: #edf4f9; }
+

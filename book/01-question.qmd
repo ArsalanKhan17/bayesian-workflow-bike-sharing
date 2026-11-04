@@ -1,0 +1,40 @@
+---
+title: "Frame the question"
+---
+
+## An analysis starts with a target
+
+Our question is: **How are weather and calendar features associated with daily rental counts, and how uncertain are predictions for later days when their weather is supplied?**
+
+One observation is an aggregate day, not a rider, station, or trip duration. The response $y_t$ is the number of rentals on day $t$. We want both an expected rental count $\mu_t$ and a distribution for the realized count $\widetilde y_t$.
+
+Those targets are different. Even if $\mu_t$ were known exactly, a realized day would remain uncertain. Posterior uncertainty about $\mu_t$ describes what we do not know about the expected count. Posterior predictive uncertainty also includes day-to-day variation and, in the temporal model, uncertainty about future latent states.
+
+## What information is supplied?
+
+Predictions receive calendar features and the day's recorded weather. In an actual advance forecast, weather would itself be unknown or forecast with error. That additional uncertainty is outside this case study. Our evaluation therefore measures **predictions conditional on observed weather**, not the accuracy of a deployable demand-forecasting service.
+
+For the temporal extension, predictions start at a fixed origin and extend across each entire evaluation quarter. They do not update latent states using rental counts from that quarter. This stricter information boundary is easy to violate accidentally.
+
+## Association is the estimand
+
+The data are observational. Temperature, season, tourism, network expansion, and calendar time can move together. A coefficient for temperature is a conditional association within the chosen model, not the result of randomly assigning weather.
+
+Similarly, comparing clear and adverse-weather predictions at the same supplied covariates is a model-based contrast. It does not establish how changing weather would causally change behavior. A sparse region of the covariate space can make such a contrast especially dependent on assumptions.
+
+## Define success before fitting
+
+The project succeeds if a reader can reconstruct the analysis, understand its assumptions, inspect the diagnostics, and reproduce the conclusions. Prediction accuracy is one part of the story. A wide but well-calibrated distribution can be more useful than a confident prediction that repeatedly misses.
+
+We separate three judgments:
+
+- **Computation:** Did the sampler adequately explore the specified posterior?
+- **Model adequacy:** Can replicated data reproduce important observed features?
+- **Predictive usefulness:** Does the model give useful distributions for later observations under the stated information boundary?
+
+A small R-hat does not answer the second or third question. An attractive predictive score does not make a coefficient causal.
+
+## Exercise
+
+Write a different question about this dataset that would require different information. For example, what would be needed to estimate station-level unmet demand? Identify which missing observations prevent answering it from daily aggregate rentals alone.
+

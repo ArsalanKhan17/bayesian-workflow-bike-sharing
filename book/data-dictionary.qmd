@@ -1,0 +1,8 @@
+---
+title: "Data dictionary and provenance"
+---
+
+```{r}
+#| results: asis
+cat(paste(readLines("../data/README.md", warn = FALSE)[-1], collapse = "\n"))
+```

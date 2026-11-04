@@ -1,0 +1,2 @@
+"max_rhat","min_bulk_ess","min_tail_ess","divergences","treedepth_hits","min_bfmi","passed","iter","warmup","adapt_delta","max_treedepth","model","split","tag","seconds","n_train","n_test"
+1.00116108185597,3461.27330582342,4928.53758588358,0,0,0.942511238094945,TRUE,4000,2000,0.99,12,"nonlinear","cv_q3","cv_q3_nonlinear",14.463,547,92

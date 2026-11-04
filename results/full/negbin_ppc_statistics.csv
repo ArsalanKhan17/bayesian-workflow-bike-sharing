@@ -1,0 +1,5 @@
+"model","statistic","observed","replicate_median"
+"negbin","mean",4409.17214397496,4466.29420970266
+"negbin","sd",1921.0776434108,2369.00166778557
+"negbin","max",8714,14235
+"negbin","zero_fraction",0,0

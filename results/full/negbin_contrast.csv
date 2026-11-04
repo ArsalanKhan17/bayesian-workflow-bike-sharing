@@ -1,0 +1,2 @@
+"model","contrast","median_ratio","lo95","hi95","probability_below_one"
+"negbin","rain_snow / clear at same covariates",0.520444963152697,0.456641558209265,0.587592329327388,1

@@ -1,0 +1,53 @@
+project:
+  type: book
+  output-dir: _book
+  execute-dir: project
+  pre-render: Rscript ../scripts/check-book.R
+  resources:
+    - assets/generated/**
+book:
+  title: "A Bayesian Workflow"
+  subtitle: "Learning from UCI Bike Sharing, from question to criticism"
+  author: ArsalanKhan17
+  date: 2026-11-04
+  chapters:
+    - index.qmd
+    - 01-question.qmd
+    - 02-data.qmd
+    - 03-foundations.qmd
+    - 04-priors.qmd
+    - 05-inference.qmd
+    - 06-criticism.qmd
+    - 07-temporal.qmd
+    - 08-evaluation.qmd
+    - 09-conclusions.qmd
+    - references.qmd
+  appendices:
+    - data-dictionary.qmd
+  search: true
+  page-navigation: true
+bibliography: references.bib
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+    toc-depth: 2
+    code-fold: show
+    code-tools: true
+    code-copy: true
+    link-external-newwindow: true
+    fig-cap-location: bottom
+execute:
+  echo: false
+  warning: false
+  error: false
+  cache: false
+  freeze: false
+knitr:
+  opts_chunk:
+    comment: "#>"
+    fig-width: 9
+    fig-height: 5
+    dpi: 150
+

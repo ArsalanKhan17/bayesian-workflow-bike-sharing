@@ -1,0 +1,104 @@
+{
+  "profile": "full",
+  "created_utc": "2026-11-04 03:16:00 UTC",
+  "configuration": {
+    "profile": "full",
+    "seed": 20261104,
+    "chains": 4,
+    "iter": 4000,
+    "warmup": 2000,
+    "adapt_delta": 0.98999999999999999,
+    "max_treedepth": 12,
+    "parallel_chains": 3,
+    "predictive_draws": 2000,
+    "results_dir": "results/full",
+    "cache_dir": "cache/full"
+  },
+  "versions": {
+    "R": "R version 4.5.3 (2026-03-11)",
+    "brms": "2.23.0",
+    "cmdstan": "2.37.0",
+    "quarto": "1.8.27"
+  },
+  "all_sampling_diagnostics_pass": false,
+  "analysis_ready": true,
+  "selected_model": "negbin",
+  "interpretation": "Conditional on supplied weather; multi-day AR paths never condition on evaluation outcomes.",
+  "sources": {
+    "day_csv_sha256": "a6bcf826782d3c0fbfdcbeead17cd0884185a0dafe8ff10cd48a874ee7ba18be"
+  },
+  "jobs": {
+    "job_results_14825bbb03fecf1f": {
+      "tag": "cv_q1_poisson",
+      "fingerprint": "0c240eee8000fa0d11eb0923a542018b"
+    },
+    "job_results_f47e45f38ede0130": {
+      "tag": "cv_q1_negbin",
+      "fingerprint": "0c7db2df7feb3dad4d764401ac1246cc"
+    },
+    "job_results_6cecdf685b78d481": {
+      "tag": "cv_q1_nonlinear",
+      "fingerprint": "55cc2d3d298d35b0f7976d5ec703dbb5"
+    },
+    "job_results_220209151ebf4be8": {
+      "tag": "cv_q1_temporal",
+      "fingerprint": "a263683bbfbc3de9232491f1af63a374"
+    },
+    "job_results_c6fb73b6440b7430": {
+      "tag": "cv_q2_poisson",
+      "fingerprint": "1aa9206fab3341afcba2060d4fecab86"
+    },
+    "job_results_609da616a4614868": {
+      "tag": "cv_q2_negbin",
+      "fingerprint": "8440c93aeda6ddabb8475fb2fa45dbb6"
+    },
+    "job_results_5d79bee78b1f9cd4": {
+      "tag": "cv_q2_nonlinear",
+      "fingerprint": "d71ce5913868ed633246d6475303a2b5"
+    },
+    "job_results_176f7151a4c1c72c": {
+      "tag": "cv_q2_temporal",
+      "fingerprint": "38a4b7d063dc09c4f8be431d15dd3f6c"
+    },
+    "job_results_0982ff8ec5754330": {
+      "tag": "cv_q3_poisson",
+      "fingerprint": "051dfef9aef93028b7b53cd4ba3e8f96"
+    },
+    "job_results_7c06ce462e0015c9": {
+      "tag": "cv_q3_negbin",
+      "fingerprint": "b7405110b9155542f4a6e2f6ef338e48"
+    },
+    "job_results_0e2c61f3c3805d90": {
+      "tag": "cv_q3_nonlinear",
+      "fingerprint": "cdaeded454f60be9ea6d88edd13e43ed"
+    },
+    "job_results_dbc7c16763defdaf": {
+      "tag": "cv_q3_temporal",
+      "fingerprint": "34ca8ae78a7e2261aa49ec4125a5e85d"
+    },
+    "job_results_b978398d4586434d": {
+      "tag": "final_poisson",
+      "fingerprint": "149b4e5234d7bb3a338bf91a3bc4f759"
+    },
+    "job_results_e158b43a4b4384f0": {
+      "tag": "final_negbin",
+      "fingerprint": "20c77bb88866315b8c7ad57876d8700d"
+    },
+    "job_results_793b513abf61fcd1": {
+      "tag": "final_nonlinear",
+      "fingerprint": "380a68bf287e928f86d24eabed0b7ded"
+    },
+    "job_results_0ca76b0c3b8d7e03": {
+      "tag": "final_temporal",
+      "fingerprint": "cd85e7704cc3bf579d9b62204efb87a6"
+    },
+    "job_results_e4720e7ab07ead5f": {
+      "tag": "sensitivity_0.25",
+      "fingerprint": "5ac552161c61f8f19885754b03c63108"
+    },
+    "job_results_41222fd17b2e868d": {
+      "tag": "sensitivity_1",
+      "fingerprint": "cabbf22c1b2182b05840566f61c300fa"
+    }
+  }
+}

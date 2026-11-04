@@ -1,0 +1,2 @@
+"max_rhat","min_bulk_ess","min_tail_ess","divergences","treedepth_hits","min_bfmi","passed","iter","warmup","adapt_delta","max_treedepth","model","split","tag","seconds","n_train","n_test"
+1.00141248666087,3286.49028376697,3968.04699681182,0,0,1.00084586282384,TRUE,4000,2000,0.99,12,"poisson","cv_q1","cv_q1_poisson",28.637,365,91

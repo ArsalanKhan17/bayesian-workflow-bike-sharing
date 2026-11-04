@@ -1,0 +1,5 @@
+"model","required_fits","failed_fits","sampling_eligible","cv_mean_log_score","exclusion_reason","selected"
+"poisson",4,0,TRUE,-218.817835483265,"",FALSE
+"negbin",4,0,TRUE,-8.87360508774024,"",TRUE
+"nonlinear",6,0,TRUE,-9.0374375083989,"",FALSE
+"temporal",4,1,FALSE,-9.00449694625725,"Sampling screens failed: cv_q3_temporal",FALSE

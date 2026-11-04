@@ -1,0 +1,2 @@
+"model","contrast","median_ratio","lo95","hi95","probability_below_one"
+"poisson","rain_snow / clear at same covariates",0.512400775769637,0.506503500332211,0.518324639173107,1

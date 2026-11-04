@@ -4,7 +4,7 @@ source_files <- function() {
     list.files(d, recursive = TRUE, full.names = TRUE, all.files = TRUE)))
   code <- code[!grepl("(^|/)(_book|\\.quarto)(/|$)", code)]
   code <- code[!grepl("^book/assets/generated/", code)]
-  sort(unique(c(code, "_targets.R", "renv.lock", "DESCRIPTION", ".Rprofile",
+  sort(unique(c(code, "_targets.R", "renv.lock", "environment-linux-64.lock", "DESCRIPTION", ".Rprofile",
                 ".gitattributes", ".gitignore", ".renvignore",
                 "renv/activate.R", "renv/settings.json")))
 }

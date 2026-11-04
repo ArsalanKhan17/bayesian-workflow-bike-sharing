@@ -23,7 +23,16 @@ Start with [the book introduction](book/index.qmd), then follow the nine chapter
 
 Prerequisites: **R 4.5.x**, a working C++17/Stan toolchain, GNU Make, and **Quarto 1.8.27** or compatible. On Windows, install the Rtools version matching R. CmdStan 2.37.0 is installed locally by setup if needed. Initial installation requires Internet access; the small source CSV is included for offline analysis afterward.
 
-On Ubuntu, install the GLPK runtime (`sudo apt-get install libglpk40`) before restoring the binary `igraph` dependency. The GitHub Actions workflows install it automatically.
+For Linux x86_64, the recommended runtime is the exact Conda environment used for the executed analysis. It pins both R packages and native libraries, avoiding incompatible RStan/TBB binary combinations:
+
+```sh
+micromamba create -n bayes-workflow -f environment-linux-64.lock
+micromamba activate bayes-workflow
+export BAYES_SKIP_RENV=1
+Rscript scripts/check-environment.R
+```
+
+GitHub Actions uses this runtime and verifies all R package versions against `renv.lock`. For a conventional R installation, leave `BAYES_SKIP_RENV` unset and use the renv setup below; native libraries must match the chosen R binaries. On Ubuntu, `igraph` also needs the GLPK runtime (`libglpk40`).
 
 From the repository root:
 

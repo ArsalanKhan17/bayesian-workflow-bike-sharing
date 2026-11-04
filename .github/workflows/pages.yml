@@ -19,6 +19,8 @@ jobs:
         with:
           r-version: '4.5.3'
           use-public-rspm: true
+      - name: Install igraph system dependency
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libglpk40
       - uses: r-lib/actions/setup-renv@v2
       - uses: quarto-dev/quarto-actions/setup@v2
         with:

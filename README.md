@@ -23,6 +23,8 @@ Start with [the book introduction](book/index.qmd), then follow the nine chapter
 
 Prerequisites: **R 4.5.x**, a working C++17/Stan toolchain, GNU Make, and **Quarto 1.8.27** or compatible. On Windows, install the Rtools version matching R. CmdStan 2.37.0 is installed locally by setup if needed. Initial installation requires Internet access; the small source CSV is included for offline analysis afterward.
 
+On Ubuntu, install the GLPK runtime (`sudo apt-get install libglpk40`) before restoring the binary `igraph` dependency. The GitHub Actions workflows install it automatically.
+
 From the repository root:
 
 ```sh

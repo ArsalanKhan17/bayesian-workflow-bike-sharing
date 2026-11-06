@@ -8,6 +8,8 @@ The source is the [UCI Bike Sharing dataset](https://doi.org/10.24432/C5W894): 7
 
 ## Read the book
 
+**[Read the published book](https://arsalankhan17.github.io/bayesian-workflow-bike-sharing/)**
+
 Start with [the book introduction](book/index.qmd), then follow the nine chapters in order. The rendered website is built into `book/_book/`. The Pages workflow publishes that book when this project is pushed to its GitHub repository and Pages is enabled.
 
 | Stage | What you learn |
